@@ -368,12 +368,6 @@ def tuple(a):
     if hasattr(a,'__iter__'):
         return (a.__iter__().__next__(),)
     return ProblemException(a, message='object is not iterable')
-#def str(a):
-#    return TypeContainer(str)
-#def int(a):
-#    return TypeContainer(num)
-#def bool(a):
-#    return TypeContainer(bool)
 
 str.__name__ = "str"
 num.__name__ = "num"
