@@ -5,7 +5,7 @@ Pynfer is a supportive tool for python development using symbolic execution appr
 
 NOTE: Current version does not support *import* keyword therefore the program can not be used to its full potential. We are working on resolving this final issue as soon as possible.
 
-It is using client-service aproach and so far the client has been implemented for vim text editor.
+It is using client-service aproach and so far the client has been implemented for vim text editor. More solutions will be added in the future.
 
 Installation
 --------------
@@ -68,4 +68,4 @@ in console starts our daemon service.
 
 	vim example.py
 
-Note: Daemon gets closed on reboot or shut down of the computer, therefore before next usage it needs to be started again. Once our project will be completed our installation will add daemon to "run on system start" list and this step will be omitted.
+Note: Daemon gets closed on reboot or shut down of the computer, therefore before next usage it needs to be started again. Once our project will be completed our installation will add daemon to "run on system start" list and this step will be omitted.	
