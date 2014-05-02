@@ -91,29 +91,34 @@ class num(object):
 
 class int(num):
     def __init__(self,x=None):
-        #return TypeContainer(num)
         pass
+
 class float(num):
     def __init__(self,x):
-        #return TypeContainer(num)
         pass
+
 class bool(object):
     def __init__(self,x=None):
         if x:
             return True
         return False
-        #return TypeContainer(bool)
 
 class str(object):
     def __init__(self,x=None):
-        #return TypeContainer(str)
         pass
+
     def __add__(self,x):
         if isinstance(x,str):
             return TypeContainer(str)
         else:
             return ProblemException(x)
-        
+    
+    def __getitem__(self,key):
+        if isinstance(key,num):
+            return TypeContainer(str)
+        return ProblemException(key,message='string indices must be integers')
+
+    
     def __lt__(self,x):
         if isinstance(x,str):
             return TypeContainer(bool)
@@ -126,6 +131,9 @@ class str(object):
     
     def __iter__(self):
         return inf_iterator(self)
+
+    def __len__(self):
+        return TypeContainer(num)
 
 class inf_iterator(object):
     def __init__(self,data):
@@ -148,7 +156,10 @@ class inf_list(object):
         else:
             if inf_random():
                 self.inf_r = new_item
-                
+    
+    def __len__(self):
+        return TypeContainer(num)
+           
     def __getitem__(self,key):
         if isinstance(key,num):
             return self.inf_r
@@ -174,6 +185,9 @@ class inf_dict(object):
         self.inf_keyR = PlaceHolder()
         self.inf_valueR = PlaceHolder()
     
+    def __len__(self):
+        return TypeContainer(num)
+
     def __getitem__(self,key):
         if isinstance(self.inf_valueR,PlaceHolder):
             return ProblemException(self)
@@ -213,6 +227,9 @@ class inf_tuple(object):
         self.inf_item4=PlaceHolder()
         self.inf_item5=PlaceHolder()
     
+    def __len__(self):
+        return TypeContainer(num)
+
     def __getitem__(self,key):
         if isinstance(key,num):
             if key==0:
@@ -270,6 +287,9 @@ class inf_set(object):
             if inf_random():
                 self.inf_r = new_item
     
+    def __len__(self):
+        return TypeContainer(num)
+
     def pop(self):
         return self.inf_r
     
@@ -307,9 +327,10 @@ def inf_isnot(a,b):
 def id(a):
     return TypeContainer(num)
 
-def inf_len(arg):
-    return arg.__len__()
-#inf_len.original_name="len"
+def len(arg):
+    if hasattr(arg,'__len__'):
+        return arg.__len__()
+    return ProblemException(arg, message='object has no len()')
 
 def inf_getattr(obj, name):
     pass
