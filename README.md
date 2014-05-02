@@ -10,8 +10,10 @@ It is using client-service aproach and so far the client has been implemented fo
 Installation
 --------------
 
-1. Make sure that both python3 (easily doable with running \textit{python3} command in console) and vim text editor are installed. To check that try running \textit{vim} command in console. If unknown command error is returned, install vim by running following:
+1. Make sure that both python3 (easily doable with running \textit{python3} command in console) and vim text editor are installed. To check that try running *vim* command in console. If unknown command error is returned, install vim by running following:
+
 	sudo apt-get install vim
+
 Note: vim needs to be installed with python support.
 2. Download the solution.
 3. Extract the downloaded archive.
