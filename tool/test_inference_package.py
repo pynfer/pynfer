@@ -521,9 +521,9 @@ class TestInfer(InferTestCase): #{{{
         c = module_scope.resolve('c')
         d = module_scope.resolve('d')
         e = module_scope.resolve('e')
-        self.assertEqual(c.value,'True')
-        self.assertEqual(d.value,'True')
-        self.assertEqual(e.value,'True')
+        self.assertTrue(c.value)
+        self.assertTrue(d.value)
+        self.assertTrue(e.value)
         
         #problem_symbols = {problem.symbol for problem in self.parser.problems}
         #print("PROBLEM: "+str(problem_symbols))
@@ -641,7 +641,7 @@ class TestInfer(InferTestCase): #{{{
             print(problem)
         self.assertEqual(problem_symbols, {'s','x'})
         z=module_scope.resolve('z')
-        self.assertEqual(z, none_type)
+        self.assertEqual(z, any_type)
         x=module_scope.resolve('x')
         print(str(x))
         
@@ -824,9 +824,9 @@ class TestInfer(InferTestCase): #{{{
         self.finalParser.eval_in_root(node)
         self.assertTrue(self.finalParser.nondet)
         self.assertEqual(len(self.finalParser.problems), 1)
-        self.assertEqual(len(self.finalParser.warnings), 3)
+        self.assertEqual(len(self.finalParser.warnings), 2)
         warning_symbols = {problem.symbol for problem in self.finalParser.warnings}
-        self.assertEqual(warning_symbols, {'Subscript','test_funkcia'})
+        self.assertEqual(warning_symbols, {'test_funkcia'})
     
     def test_set(self):
         code = makecode("""
@@ -1164,8 +1164,8 @@ class TestInfer(InferTestCase): #{{{
         self.assertEqual(len(self.finalParser.problems), 0)
         self.assertEqual(len(self.finalParser.warnings), 0)
         #module_scope=self.finalParser.finalScope
-        a_atrs = self.finalParser.getAllPossibleAtr('a')
-        print(a_atrs)
+        a_atrs = self.finalParser.get_all_possible_attr('a')
+        self.assertEqual(len(a_atrs),8)
         
     
     def test_break_continue(self):
@@ -1187,7 +1187,7 @@ class TestInfer(InferTestCase): #{{{
         self.assertIsNum(y)
         z = module_scope.resolve('z')
         self.assertIsStr(z)
-    
+
     def test_inc_dec(self):
         code = makecode("""
         |class A:
@@ -1199,7 +1199,7 @@ class TestInfer(InferTestCase): #{{{
         |a=A()
         |a.x+=1
 """)
-        node = ast.parse(code, mode = 'exec')
+        node=ast.parse(code, mode = 'exec')
         print(utils.astNode_to_tree(node))
         self.parser.eval_in_root(node)
         module_scope = self.parser.root_scope
@@ -1247,6 +1247,26 @@ class TestInfer(InferTestCase): #{{{
         #problem_symbols = {problem.symbol for problem in self.finalParser.problems}
         #self.assertEqual(problem_symbols, {'p','q'})
     
+    def test_complex_example2(self):
+        code = makecode('''
+        |class Element(object):
+        |    def __init__(self):
+        |        self.data = 10
+        |    def printX(self):
+        |        print(self.x) #error
+        |
+        |instanceOfElement = Element()
+        |testList = [instanceOfElement, "test"]
+        |testList[0].printX()
+        |10 + testList[1] #error
+''')
+        node = ast.parse(code, mode = 'exec')
+        print(utils.astNode_to_tree(node))
+        self.finalParser.eval_in_root(node)
+        print("P:" +str(self.finalParser.problems))
+        print("W:" +str(self.finalParser.warnings))
+
+
     def test_tuple_assign(self):
         code = makecode('''
         |def makePair(x,y):
@@ -1266,6 +1286,7 @@ class TestInfer(InferTestCase): #{{{
         |    vnjvndfkvns cnscksdcnsj
         |    """
         |    x=4
+        |i[3]
         
 ''')
         node = ast.parse(code, mode = 'exec')
@@ -1366,8 +1387,8 @@ class TestWarnings(InferTestCase): #{{{
     
 
 if __name__ == '__main__':
-    #run_all = True
-    run_all = False
+    run_all = True
+    #run_all = False
 
     if run_all:
         logger = logging.getLogger('')
@@ -1384,14 +1405,14 @@ if __name__ == '__main__':
         #suite.addTest(TestInfer("test_externs"))
         #suite.addTest(TestInfer("test_method_lookup"))
         #suite.addTest(TestInfer("test_obj_const"))
-        suite.addTest(TestInfer("test_help"))
+        #suite.addTest(TestInfer("test_help"))
         #suite.addTest(TestInfer("test_raise"))
         #suite.addTest(TestInfer("test_except"))
         #suite.addTest(TestInfer("test_finally"))
         #suite.addTest(TestInfer("test_complex_try_statement"))
         #suite.addTest(TestInfer("test_finalParser"))
         #suite.addTest(TestInfer("test_multiple_targets_assign"))
-        #suite.addTest(TestInfer("test_list"))
+        suite.addTest(TestInfer("test_list"))
         #suite.addTest(TestInfer("test_for_and_while"))
         #suite.addTest(TestInfer("test_set"))
         #suite.addTest(TestInfer("test_optional_args"))
@@ -1407,7 +1428,7 @@ if __name__ == '__main__':
         #suite.addTest(TestInfer("test_scope_merging"))
         #suite.addTest(TestInfer("test_break_continue"))
         #suite.addTest(TestInfer("test_inc_dec"))
-        #suite.addTest(TestInfer("test_complex_example"))
+        #suite.addTest(TestInfer("test_complex_example2"))
         #suite.addTest(TestInfer("test_tuple_assign"))
         
         unittest.TextTestRunner().run(suite)
