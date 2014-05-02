@@ -40,9 +40,21 @@ Make sure that both python3 (easily doable with running *python3* command in con
 
 		cp ~/Downloads/pynfer-master/plugins/pynfer.vim ~/.vim/plugin
 
-- *Optional*: Add port number and number of iterations to local vim configuration file **vimrc** - usually located at *~/.vimrc*. There are default values specified, so this step is completely optional (see \ref{sec:vimrc} for details).
+- *Optional*: Add port number and number of iterations to local vim configuration file **vimrc** - usually located at *~/.vimrc*. There are default values specified, so this step is completely optional. Example:
 
-9. Run daemon.py at */opt/pynfer* directory:
+		"Default value for python is __init__.py
+		let g:Pynfer_root_filename ='something.py'
+		
+		"Default value is 10003
+		let g:Pynfer_port_number = 10003 
+		
+		"Default value is 10
+		let g:Pynfer_number_of_iterations = 1
+		
+		"Default value is 0
+		let g:Pynfer_default_python_settings = 0
+
+- Run daemon.py at */opt/pynfer* directory:
 
 		python3 /opt/pynfer/daemon.py
 
