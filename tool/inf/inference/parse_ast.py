@@ -535,6 +535,7 @@ main parser method is eval_code. exec_* methods are used to process individual a
         res = scope.resolve(node.id, 'cascade')
         if res is None and isinstance(node.ctx,ast.Load):
             self.warn(node, "NameError: Name '"+ node.id + "' is not defined", node.id)
+            return any_type
         return res
 
     @logentry
@@ -843,10 +844,8 @@ main parser method is eval_code. exec_* methods are used to process individual a
             if isinstance(res, Typez) and  "__class__" in res.scope and (res.scope["__class__"] == self.extern_scope['TypeContainer']):      
                 gen_type=res.scope["T"]
                 result = Typez(kind='const',__class__ = gen_type)
-                if gen_type==self.extern_scope['num']:
-                    print('TU: '+str(node.lineno))
                 return result
-                
+ 
             return res
         
         if fun_type.kind == 'classdef':
@@ -911,7 +910,6 @@ main parser method is eval_code. exec_* methods are used to process individual a
             keywords = {}
             for keyword in node.keywords:
                 keywords[keyword.arg]=self.eval_code(keyword.value, scope)
-            #print("ARGS:"+str(node.func)+str(args))
             counter = 0
             for arg_eval in args:
                 if arg_eval is None and hasattr(node.args[counter], 'id'):
@@ -972,7 +970,7 @@ main parser method is eval_code. exec_* methods are used to process individual a
                 _handler_type = self.eval_code(_handler.type, scope)
                 if e.res.scope['__class__'] == _handler_type:
                     handled = True
-                    print("nasiel som handler pre exception")
+                    #print("handler for Exception found")
                     for _node in _handler.body:
                         self.eval_code(_node, scope)
                     break
@@ -1184,7 +1182,7 @@ are doing only minimum ammount of job to correctly cover the execution of the sp
 code, recursively using eval_code to evaluate values of their children nodes.
 """     
         if self.breakpoint and hasattr(node, 'lineno') and node.lineno == self.breakpoint:
-            print("breakpoint occured!!!")
+            #print("breakpoint occured!!!")
             raise SuperBreakException()
 
         self.visited_ast_nodes.append(node)
@@ -1199,7 +1197,8 @@ code, recursively using eval_code to evaluate values of their children nodes.
         except RaiseException as e:
             self.warn(e.statement, 'unhandled raise of exception', 'Exception')
         except SuperBreakException as e:
-            print("breakpoint occured, eval terminated!!!")
+            #print("breakpoint occured, eval terminated!!!")
+            pass
             
 """
 class that encaptulates running parser x times and returns set of problems and warnings
