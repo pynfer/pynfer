@@ -18,9 +18,19 @@ if sys.version_info[:2] < (2, 5):
 	raise AssertionError('Vim must be compiled with Python 2.5 or higher; you have ' + sys.version)
 EOF
 
-:set number
-:set showmode
-:set tabstop=4
+" ROOT FILENAME 
+if exists("g:Pynfer_default_python_settings")
+    let root_filename = g:Pynfer_default_python_settings
+else
+    let root_filename = 0
+endif
+
+if root_filename > 0
+	:set number
+	:set showmode
+	:set tabstop=4
+endif
+
 :set completeopt=menuone,longest,preview
 :set backspace=indent,eol,start
 syntax on
@@ -141,9 +151,10 @@ def parseAndValidateCall(iterations):
             #Check if daemon did not send "I have nothing to do with this, unknown buffer" response
             if "type_of_request" in response.keys() and response['type_of_request'] == 'requestForBuffer':
                 vim.command("call SendWholeBuffer()")
-                print("Synchronizing buffer with the daemon...")
+                print("Pynfer: Synchronizing buffer with the daemon...")
                 time.sleep(1)
                 validation_running = False
+                print("Pynfer: Synchronizing buffer with the daemon... Done")
             else:    
                 #Indentation error came - show error
                 if 'message' in response.keys() and 'line_number' in response.keys():
@@ -183,9 +194,8 @@ def parseAndValidateCall(iterations):
                 vim.command("call ActivateQuickFixWindow(quickfix_count)")
                 validation_running = False
         except Exception, msg:
-            print("Error in ParseAndValidate: ", msg)
+            print("Pynfer: Error in ParseAndValidate: ", msg)
             validation_running = False
-        #	print("%s [%d]" % (msg.strerror, msg.errno))
 
 PYEND
 
@@ -244,7 +254,7 @@ try:
     vim.command("call SendWholeBuffer()")    
     
 except Exception as error: 
-    print("Could not connect to the remote server: "+ str(error))
+    print("Pynfer: Could not connect to the remote server: "+ str(error))
     client = None
 	
 
@@ -280,7 +290,7 @@ if client:
         client.send_message(request_whole)
         
     except Exception, msg:
-	    print("Error in SendWholeBuffer: ", msg)
+	    print("Pynfer: Error in SendWholeBuffer: ", msg)
 PYTHONEND2
 endfunction
 
@@ -420,9 +430,10 @@ if client:
 
         omniRespond = json.loads(data)
         if "type_of_request" in omniRespond.keys() and omniRespond['type_of_request'] == 'requestForBuffer':
-            print("Synchronizing buffer with the daemon... Please, try auto completion again.")
+            print("Pynfer: Synchronizing buffer with the daemon...")
             vim.command("call SendWholeBuffer()")
             time.sleep(1)
+            print("Pynfer: Synchronizing buffer with the daemon... Done. Please try again.")
         else:
             if 'options' in omniRespond.keys():
                 for omniOption in omniRespond['options']:
@@ -430,15 +441,13 @@ if client:
                     info = ''
                     if len(omniOption) == 2:
                         info = omniOption[1]
-            #       vim.command("let g:option = '%s'" % vim_quote(omniOption))
-            #        vim.command("let option = {'word' : '%s', 'menu' : 'menufasa', 'info' : '%s', 'kind' : 'F'}" %(vim_quote(word),vim_quote(info)))
-                    # To info treba kuknuc 
-        #            vim.command("let option = {'word' : '%s', 'info' : '%s'}" %(vim_quote(word),vim_quote(info)))
+                    # Info not working properly, disabled for now.
+                    #vim.command("let option = {'word' : '%s', 'info' : '%s'}" %(vim_quote(word),vim_quote(info)))
                     vim.command("let option = {'word' : '%s'}" %(vim_quote(word)))
                     vim.command("call add(b:return_list, option)")
 
     except Exception, msg:
-	    print("Error in OmniCompletition: ", msg)
+	    print("Pynfer: Error in OmniCompletition: ", msg)
 ENDOFPYTHONOMNI
 	
     return b:return_list
@@ -483,9 +492,10 @@ if client:
         data = client.handle_read()
         funcRespond = json.loads(data)
         if "type_of_request" in funcRespond.keys() and funcRespond['type_of_request'] == 'requestForBuffer':
-            print("Synchronizing buffer with the daemon... Please, try user completion again.")
+            print("Pynfer: Synchronizing buffer with the daemon...")
             vim.command("call SendWholeBuffer()")
             time.sleep(1)
+            print("Pynfer: Synchronizing buffer with the daemon...Done. Please, try user completion again.")
         else:
             if 'options' in funcRespond.keys():
                 for funcOption in funcRespond['options']:
@@ -498,7 +508,7 @@ if client:
 
     except Exception, msg:
         traceback.print_exc()
-        print("Error in GetAllDefs: ", msg)
+        print("Pynfer: Error in GetAllDefs: ", msg)
 
 ENDOFPYTHONGETDEFS
 	
@@ -519,12 +529,6 @@ endfunc
 func MayCompleteNoDot()
 return "\<C-X>\<C-U>"
 endfunc
-
-"testing function
-func MyLittle()
-echom("THIS IS SPARTA 2")
-endfunc
-
 
 "------------------ QUICK FIX WINDOW -----------------------------
 
