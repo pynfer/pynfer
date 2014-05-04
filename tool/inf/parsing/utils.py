@@ -255,10 +255,7 @@ def traverse_ast_test(node):
                 try:
                     n = parse_with_ast(node)
                 except Exception as error:
-                    traceback.print_exc()
                     print("ERROR:"+str(error))
-                    print("NODE:"+node_to_str(node))
-                    print("DELETING A PART OF CODE")
                     deletedParts.append((node.beginLine, node.endLine))
                     node.childs = []
             else:

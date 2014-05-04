@@ -81,9 +81,9 @@ def get_auto_completion(host, client_address, buffer_used, variable_line, line_n
         resolving_name = 'target_for_completion'
         buffer = buffer_used
         buffer[line_number - 1] = variable_line[0:leading_spaces] + resolving_name + ' = ' + line_modified
-    
+        buffer = buffer[0:line_number]
+        
         # Parse modified buffer and eval 
-        #ast_rep, del_lines = completion_parse(buffer)
         data = buffer_to_string(buffer)
         lexer = python_lexer.PythonLexer()
         lexer.input(data)
@@ -92,7 +92,8 @@ def get_auto_completion(host, client_address, buffer_used, variable_line, line_n
         
         tree, del_parts = utils.traverse_ast_test(res)
         ast_tree = utils.parse_with_ast(res)  
-        
+#        print("TREE:"+str(utils.astNode_to_tree(ast_tree)))
+
         del_lines = []
         for delPart in del_parts:
             for i in range(delPart[0],delPart[1]+1):
@@ -104,11 +105,10 @@ def get_auto_completion(host, client_address, buffer_used, variable_line, line_n
         del_lines.sort()
         
         current_line_number = utils.getCurrentLineNum(line_number, del_lines)
-
         parser = FinalParser(1)
-        parser.eval_in_root(ast_tree, current_line_number + 1)
+        parser.eval_in_root(ast_tree)
         
-        #print(str(parser.scopes[0]))
+#        print(str(parser.scopes[0]))
         
         #Remove inf_ attribtues since those are used for internal purposes
         list_of_all = parser.get_all_possible_attr(resolving_name)
@@ -135,7 +135,6 @@ def parse_and_validate(host, dictionaryID, client_address, number_of_iterations)
         start_time = time.time() * 1000
         log_to_file("START OF VALIDATION: "+str(start_time)+", Number of iterations: "+str(number_of_iterations))
         
-        #buffer = buffer_used
         buffer = openBuffers[dictionaryID]
         
         problems_list = []
@@ -151,13 +150,13 @@ def parse_and_validate(host, dictionaryID, client_address, number_of_iterations)
             
         lexer = python_lexer.PythonLexer()
         res = python_parser.parse_data(data,lexer)
-        log_time("AFTER PARSE DATA: ", time.time() * 1000, start_time)
+        #log_time("AFTER PARSE DATA: ", time.time() * 1000, start_time)
         
         tree, del_parts = utils.traverse_ast_test(res)       
-        log_time("AFTER TRAVERSE AST: ", time.time() * 1000, start_time)  
+        #log_time("AFTER TRAVERSE AST: ", time.time() * 1000, start_time)  
         
         ast_tree = utils.parse_with_ast(res)   
-        log_time("AFTER PARSE WITH AST: ", time.time() * 1000, start_time)
+        #log_time("AFTER PARSE WITH AST: ", time.time() * 1000, start_time)
         
         parser=FinalParser(number_of_iterations)
         parser.eval_in_root(ast_tree)
@@ -166,13 +165,13 @@ def parse_and_validate(host, dictionaryID, client_address, number_of_iterations)
             for i in range(delPart[0],delPart[1]+1):
                 del_lines.append(i)
                       
-        log_time("AFTER EVAL IN ROOT: ", time.time() * 1000, start_time)
+        #log_time("AFTER EVAL IN ROOT: ", time.time() * 1000, start_time)
         
         #processing syntax problems
         for line in del_lines:
             p = []
             p.append(line)
-            p.append('Invalid syntax OOOo.')
+            p.append('Invalid syntax.')
             problems_list.append(p)
             
         del_lines+=res.emptyLinesNums
@@ -205,8 +204,12 @@ def parse_and_validate(host, dictionaryID, client_address, number_of_iterations)
             w.append(str(warning))
             warnings_list.append(w)
         
+        log_to_file("Problems: "+str(problems_list))
+        log_to_file("Warnings: "+str(warnings_list))
+        log_to_file("Validation completed...")
+
         problems = json.dumps({'problems' : problems_list, 'warnings' : warnings_list})
-        print("DUMPED THING: "+str(problems))
+        #print("DUMPED THING: "+str(problems))
         host.respond(bytes(problems, "UTF-8"), client_address)
         
         
@@ -298,7 +301,7 @@ def respond_definitions(host, client_address, dictionaryID, fullpath, filename):
         listOfOptions = dictOfFuncsAndClasses[clientInitPath[dictionaryID]]
         
         user_completion_response = json.dumps({'options' : listOfOptions})
-        print("DUMPED: "+str(user_completion_response))
+#        print("DUMPED: "+str(user_completion_response))
         host.respond(bytes(user_completion_response, 'UTF-8'), client_address)
     except:
         traceback.print_exc()

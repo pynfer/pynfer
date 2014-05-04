@@ -1180,14 +1180,15 @@ return value of the code.
 the whole idea is to dispatch work to exec_<ast_node_name> functions; exec_name functions
 are doing only minimum ammount of job to correctly cover the execution of the specific piece of
 code, recursively using eval_code to evaluate values of their children nodes.
-"""     
+"""    
+        self.visited_ast_nodes.append(node)
+        name = 'exec_'+node.__class__.__name__
+        handler = Parser.__dict__[name]
+
         if self.breakpoint and hasattr(node, 'lineno') and node.lineno == self.breakpoint:
             #print("breakpoint occured!!!")
             raise SuperBreakException()
 
-        self.visited_ast_nodes.append(node)
-        name = 'exec_'+node.__class__.__name__
-        handler = Parser.__dict__[name]
         return handler(self, node, scope)
 
     def eval_in_root(self, node, breakpoint=None):
